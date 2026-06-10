@@ -130,6 +130,7 @@ export default function App() {
     if (urlRoom) {
       const targetRoom = urlRoom.trim().toUpperCase();
       setRoomCode(targetRoom);
+      setTempJoinCode(targetRoom);
       setIsMultiplayer(true);
       setShowJoinCodeModal(true);
     }
@@ -2515,6 +2516,21 @@ export default function App() {
 
               {/* Room action selection */}
               <div className="pt-2 flex flex-col gap-3">
+                {roomCode && (
+                  <button
+                    id="btn-gateway-join-direct"
+                    onClick={() => {
+                      playClickSound();
+                      connectToMultiplayer(roomCode, playerNameInput || 'Player');
+                      setShowJoinCodeModal(false);
+                    }}
+                    className="w-full py-3.5 bg-neon-pink/20 hover:bg-[#ff4081]/30 text-neon-pink border-2 border-neon-pink rounded-lg font-bold font-display text-sm transition-all uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer pulse-glow-pink"
+                  >
+                    <LogIn className="w-5 h-5 animate-pulse" />
+                    <span>Deploy to Sector: {roomCode}</span>
+                  </button>
+                )}
+
                 <button
                   id="btn-gateway-create"
                   onClick={() => {
@@ -2526,7 +2542,7 @@ export default function App() {
                   className="w-full py-2.5 bg-neon-cyan/15 hover:bg-neon-cyan/25 text-[#00e5ff] border border-neon-cyan/40 hover:border-neon-cyan rounded font-bold font-display text-xs transition-all uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Swords className="w-4 h-4" />
-                  <span>Create Mission Room</span>
+                  <span>Create New Mission Room</span>
                 </button>
 
                 <div className="relative flex py-1 items-center">
