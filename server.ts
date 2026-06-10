@@ -46,6 +46,17 @@ async function startServer() {
     res.json({ status: "ok", roomsActive: Object.keys(rooms).length });
   });
 
+  // Get all active rooms
+  app.get("/api/active-rooms", (req, res) => {
+    const activeRooms = Object.values(rooms).map(room => ({
+      roomId: room.roomId,
+      playerCount: Object.keys(room.players).length,
+      gameStarted: room.gameStarted,
+      players: Object.values(room.players).map(p => ({ id: p.id, name: p.name, color: p.color, isBot: p.isBot }))
+    }));
+    res.json({ rooms: activeRooms });
+  });
+
   // Get current status of a room
   app.get("/api/room/:roomId", (req, res) => {
     const { roomId } = req.params;

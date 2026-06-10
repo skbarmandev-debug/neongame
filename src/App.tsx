@@ -12,7 +12,7 @@ import { generateObstacles, getSpawnPosition } from './utils/mapGenerator';
 import { WEAPON_REGISTRY, LEVEL_UP_XP } from './utils/weaponsData';
 
 // Icons used in Pause screen and overlays
-import { RotateCcw, Home, Play, Settings, Copy, Check, LogIn, Swords, User } from 'lucide-react';
+import { RotateCcw, Home, Play, Settings, Copy, Check, LogIn, Swords, User, RefreshCw } from 'lucide-react';
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>('menu');
@@ -30,6 +30,37 @@ export default function App() {
   const [showPlaySelector, setShowPlaySelector] = useState<boolean>(false);
   const [showJoinCodeModal, setShowJoinCodeModal] = useState<boolean>(false);
   const [tempJoinCode, setTempJoinCode] = useState<string>('');
+
+  const [activeRooms, setActiveRooms] = useState<{
+    roomId: string;
+    playerCount: number;
+    gameStarted: boolean;
+    players: { id: number; name: string; color: string; isBot: boolean }[];
+  }[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState<boolean>(false);
+
+  const fetchActiveRooms = async () => {
+    setLoadingRooms(true);
+    try {
+      const res = await fetch('/api/active-rooms');
+      const data = await res.json();
+      if (data && data.rooms) {
+        setActiveRooms(data.rooms);
+      }
+    } catch (err) {
+      console.error("Failed to fetch active rooms:", err);
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showJoinCodeModal) {
+      fetchActiveRooms();
+      const interval = setInterval(fetchActiveRooms, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [showJoinCodeModal]);
 
   const socketRef = useRef<WebSocket | null>(null);
   const assignedPlayerIdRef = useRef<number | null>(null);
@@ -2482,7 +2513,7 @@ export default function App() {
       {/* 🛰️ ONLINE CONFIG / NAME MODAL */}
       {showJoinCodeModal && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-lg z-55 flex items-center justify-center p-4">
-          <div className="bg-slate-950 border border-[#00e5ff]/30 p-6 md:p-8 rounded-xl max-w-sm w-full shadow-[0_0_40px_rgba(0,229,255,0.15)] select-none">
+          <div className="bg-slate-950 border border-[#00e5ff]/30 p-6 md:p-8 rounded-xl max-w-md w-full shadow-[0_0_40px_rgba(0,229,255,0.15)] select-none">
             
             <h2 className="text-lg md:text-xl font-bold font-display text-center text-neon-cyan mb-2 tracking-widest uppercase">
               SECTOR GATEWAY
@@ -2578,6 +2609,73 @@ export default function App() {
               </div>
             </div>
 
+            {/* Active Public Rooms Scanner Panel */}
+            <div className="mt-5 border-t border-slate-900 pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[9px] font-mono text-[#a0a5cc] tracking-widest uppercase flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-neon-cyan animate-pulse"></span>
+                  Detected Public Sectors
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    playClickSound();
+                    fetchActiveRooms();
+                  }}
+                  className="text-[9px] font-mono text-neon-cyan hover:underline cursor-pointer uppercase flex items-center gap-1"
+                >
+                  <RefreshCw className={`w-2.5 h-2.5 ${loadingRooms ? 'animate-spin' : ''}`} />
+                  Re-scan
+                </button>
+              </div>
+
+              <div className="max-h-[140px] overflow-y-auto space-y-1.5 pr-1 text-left">
+                {activeRooms.filter(r => !r.gameStarted).length === 0 ? (
+                  <div className="text-center py-5 text-gray-500 font-mono text-[9px] leading-relaxed border border-slate-900 bg-slate-950/45 rounded">
+                    NO ACTIVE PUBLIC ENCOUNTERS PRESENT.<br/>
+                    <span className="text-neon-cyan/60 animate-pulse uppercase">Create one to initiate sector!</span>
+                  </div>
+                ) : (
+                  activeRooms
+                    .filter(r => !r.gameStarted)
+                    .map((room) => (
+                      <div
+                        key={room.roomId}
+                        className="bg-slate-900/40 border border-slate-900/60 hover:border-neon-cyan/40 p-2 rounded flex items-center justify-between transition-all"
+                      >
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-display font-black text-[#00e5ff] text-xs tracking-widest">
+                              {room.roomId}
+                            </span>
+                            <span className="text-[8px] font-mono text-gray-400 bg-slate-950 px-1 rounded border border-slate-900">
+                              {room.playerCount}/6 Players
+                            </span>
+                          </div>
+                          <p className="text-[8px] font-mono text-gray-500 truncate max-w-[180px]">
+                            {room.players.map(p => p.name).join(', ')}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playClickSound();
+                            setRoomCode(room.roomId);
+                            setTempJoinCode(room.roomId);
+                            connectToMultiplayer(room.roomId, playerNameInput || 'Player');
+                            setShowJoinCodeModal(false);
+                          }}
+                          className="px-2.5 py-1 bg-neon-cyan/10 hover:bg-neon-cyan/20 text-[#00e5ff] hover:text-white border border-neon-cyan/20 hover:border-neon-cyan rounded text-[9px] font-mono font-bold tracking-wider transition-all uppercase cursor-pointer"
+                        >
+                          Join
+                        </button>
+                      </div>
+                    ))
+                )}
+              </div>
+            </div>
+
             <button
               id="gateway-cancel"
               onClick={() => {
@@ -2586,7 +2684,7 @@ export default function App() {
                 // Clear any potential room search param
                 window.history.replaceState({}, '', window.location.pathname);
               }}
-              className="mt-6 w-full py-1.5 border border-slate-900 hover:border-slate-800 rounded font-mono text-[10px] text-gray-600 hover:text-gray-400 bg-slate-950 transition-all uppercase cursor-pointer"
+              className="mt-5 w-full py-1.5 border border-slate-900 hover:border-slate-800 rounded font-mono text-[10px] text-gray-600 hover:text-gray-400 bg-slate-950 transition-all uppercase cursor-pointer"
             >
               Abstain
             </button>
