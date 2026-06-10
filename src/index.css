@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-display: "Orbitron", "Courier New", monospace;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+  --color-neon-cyan: #00e5ff;
+  --color-neon-pink: #ff4081;
+  --color-neon-green: #69ff47;
+  --color-neon-yellow: #ffd740;
+}
+
+/* Custom Scanlines CSS */
+.scanlines {
+  position: relative;
+  overflow: hidden;
+}
+.scanlines::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 10;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Vignette effect */
+.vignette {
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+}
+
+/* Scrollbar customized */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e1e2e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7c4dff;
+}
+
+/* Keyframes for neon animation */
+@keyframes neon-pulse-cyan {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), inset 0 0 10px rgba(0, 229, 255, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(0, 229, 255, 0.8), inset 0 0 15px rgba(0, 229, 255, 0.4); }
+}
+@keyframes neon-pulse-pink {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 64, 129, 0.4), inset 0 0 10px rgba(255, 64, 129, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(255, 64, 129, 0.8), inset 0 0 15px rgba(255, 64, 129, 0.4); }
+}
+
+.pulse-glow-cyan {
+  animation: neon-pulse-cyan 2s infinite ease-in-out;
+}
+.pulse-glow-pink {
+  animation: neon-pulse-pink 2s infinite ease-in-out;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  background-color: #0a0a0f;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  height: 100%;
+}

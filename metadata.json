@@ -1,0 +1,6 @@
+{
+  "name": "NeonBlast Arena",
+  "description": "A fast-paced local multiplayer top-down 2D neon shooter game with customizable settings, power-ups, weapons, and particle effects.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

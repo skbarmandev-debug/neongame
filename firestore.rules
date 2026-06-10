@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    function incoming() { return request.resource.data; }
+
+    // Leaderboard rules setup
+    match /leaderboard/{scoreId} {
+      allow read: if true; // anyone can view high scores
+
+      allow create: if (
+        isValidId(scoreId) &&
+        incoming().keys().hasAll(['name', 'score', 'kd', 'date', 'createdAt']) &&
+        incoming().keys().size() == 5 &&
+        incoming().name is string && incoming().name.size() <= 12 && incoming().name.size() > 0 &&
+        incoming().score is int && incoming().score >= 0 && incoming().score <= 50000 &&
+        incoming().kd is string && incoming().kd.size() <= 15 &&
+        incoming().date is string && incoming().date.size() == 10 &&
+        incoming().createdAt == request.time
+      );
+
+      // Score recordings are write-once, never updated or deleted by clients
+      allow update, delete: if false;
+    }
+  }
+}

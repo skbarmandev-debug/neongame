@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "HighScore": {
+      "title": "HighScore",
+      "description": "A high score entry for the global leaderboard",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Callsign/Name of the player"
+        },
+        "score": {
+          "type": "integer",
+          "description": "Score achieved in the game"
+        },
+        "kd": {
+          "type": "string",
+          "description": "Kill/Death ratio formatted as 'K / D'"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date achieved, formatted as YYYY-MM-DD"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the score was recorded"
+        }
+      },
+      "required": ["name", "score", "kd", "date", "createdAt"]
+    }
+  },
+  "firestore": {
+    "leaderboard/{scoreId}": {
+      "schema": "HighScore",
+      "description": "Global leaderboard collections of high scores"
+    }
+  }
+}
