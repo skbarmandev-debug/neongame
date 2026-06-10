@@ -157,9 +157,7 @@ export default function App() {
     setIsLocalReady(false);
 
     // Force append room query to url safely without page reload
-    const url = new URL(window.location.href);
-    url.searchParams.set('room', cleanCode);
-    window.history.replaceState({}, '', url.toString());
+    window.history.replaceState({}, '', `?room=${cleanCode}`);
 
     if (socketRef.current) {
       socketRef.current.close();
@@ -2586,9 +2584,7 @@ export default function App() {
                 playClickSound();
                 setShowJoinCodeModal(false);
                 // Clear any potential room search param
-                const url = new URL(window.location.href);
-                url.search = '';
-                window.history.replaceState({}, '', url.toString());
+                window.history.replaceState({}, '', window.location.pathname);
               }}
               className="mt-6 w-full py-1.5 border border-slate-900 hover:border-slate-800 rounded font-mono text-[10px] text-gray-600 hover:text-gray-400 bg-slate-950 transition-all uppercase cursor-pointer"
             >
